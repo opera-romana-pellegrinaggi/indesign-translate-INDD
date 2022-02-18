@@ -7,6 +7,9 @@ which is easily consumed by translation tools such as weblate.
 The folder where the translations are extracted to will be saved as a label attached to the Indesign file,
 after which the Indesign file will be automatically saved so that the label will stick.
 
+**N.B. Any time the source file is changed in any way, this script must be run again, so that the `translation.json` is regenerated.
+This is the only way to be sure that the keys for the translation strings will match and be correctly imported again.**
+
 ## ImportTranslation
 Once translations are complete, this script will scan the translations folder (as saved in the label attached to the document by the previous script),
 and let you import either a single language translation or all language translations.
