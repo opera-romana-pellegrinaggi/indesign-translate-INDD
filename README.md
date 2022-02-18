@@ -33,6 +33,8 @@ These two repos contains shims aimed specifically at Extendscript (which has no 
 Save them in the parent folder (on Windows, something like `C:\Users\{username}\AppData\Roaming\Adobe\InDesign\{version}\{language}\Scripts\`)
 with the names `es5-shim.js` and `es6-shim.js`.
 
+With the ES5 shim, there is no need to include a `JSON` shim separately. It is already included in the ES5 shim.
+
 ## Things that the graphic designer should keep in mind when designing the source file
 * For each story expand the story editor to take up the full width of the screen, and turn on the end of line symbol in the story editor. We want to make sure that each sentence that should be translated as one sentence does not have an unnecessary line break.
 * Avoid adjusting the format of specific pieces of text within a story as this causes that piece of text to have to be translated seperately from the rest of the sentence, in order to maintain the formatting.
