@@ -1,7 +1,7 @@
-﻿#include "../es5-shim.js"
-#include "../es6-shim.js"
 //ExportStoriesI18nJson.jsx
 //An InDesign JavaScript
+#include "../es5-shim.js"
+#include "../es6-shim.js"
 
 main();
 function main(){
@@ -123,7 +123,7 @@ function exportStoriesToJSON (exportFolder) {
     writeFile( myFile, fileContents, "utf-8" );
     progress.increment();
     progress.close();
-    //alert(myFile + " saved!");
+    alert(myFile + " saved!");
 
 }
 
