@@ -1,13 +1,22 @@
+/**
+ * ImportTranslation.jsx
+ * An InDesign JavaScript
+ *
+ * Author: John R. D'Orazio <j.dorazio@orpnet.org>
+ * Creation date: February 11th 2022
+ * Latest update: February 18th 2022
+ * License: Apache v2
+ */
+
+
 #include "../es5-shim.js"
 #include "../es6-shim.js"
-//ImportTranslation.jsx
-//An InDesign JavaScript
 
 main();
 function main(){
     app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
-    if(app.documents.length != 0){
-        if (app.activeDocument.stories.length != 0){
+    if(app.documents.length != 0) {
+        if (app.activeDocument.stories.length != 0) {
             myDisplayDialog();
         }
         else{
@@ -19,7 +28,7 @@ function main(){
     }
 }
 
-function myDisplayDialog(){
+function myDisplayDialog() {
     langMap = {
         "en": "English",
         "fr": "French",
@@ -30,18 +39,10 @@ function myDisplayDialog(){
     };
 
     var validLangs = Object.keys(langMap);
-    $.writeln( "is validLangs an array? typeof validLangs = " + typeof validLangs + ' so ' );
-    if( Array.isArray( validLangs ) ) {
-        $.writeln( 'validLangs does seem to be an array by Array.isArray standards' );
-    }
-    if( validLangs instanceof Array ) {
-        $.writeln( 'validLangs does seem to be an array by instanceof standards' );
-    }
-
     myI18nProjectFolderFullPath = app.activeDocument.extractLabel('myI18nProjectFolder');
     myI18nProjectFolderPath = myI18nProjectFolderFullPath.substr(0,myI18nProjectFolderFullPath.lastIndexOf('/'));
     myLocale = myI18nProjectFolderFullPath.substr(myI18nProjectFolderFullPath.lastIndexOf('/')+1);
-    $.writeln( 'extractLabel = ' + myI18nProjectFolderFullPath + ', myI18nProjectFolderPath = ' + myI18nProjectFolderPath + ', myLocale = ' + myLocale );
+    //$.writeln( 'extractLabel = ' + myI18nProjectFolderFullPath + ', myI18nProjectFolderPath = ' + myI18nProjectFolderPath + ', myLocale = ' + myLocale );
     myI18nProjectFolder = new Folder(myI18nProjectFolderPath);
     translationLocaleFolders = myI18nProjectFolder.getFiles(function(file){
         langId = file.toString().split(/[\\\/]/).pop();
@@ -51,7 +52,7 @@ function myDisplayDialog(){
     for(var i = 0; i < translationLocaleFolders.length; i++) {
         langIds[i] = translationLocaleFolders[i].toString().split(/[\\\/]/).pop();
     }
-    $.writeln( langIds.join(' | ') );
+    //$.writeln( langIds.join(' | ') );
     with(myDialog = app.dialogs.add({name:"Import translated Stories"})){
         myDialogColumn = dialogColumns.add()
         with(myDialogColumn){
@@ -88,22 +89,10 @@ function myDisplayDialog(){
                 importLangs.forEach(function(importLang) {
                     progress.reset();
                     translationFilePath = myI18nProjectFolderPath + '/' + importLang + '/translation.json';
-                    $.writeln('now importing translations from ' + myI18nProjectFolderPath + '/' + importLang + '/translation.json');
+                    //$.writeln('now importing translations from ' + myI18nProjectFolderPath + '/' + importLang + '/translation.json');
                     app.doScript('importStoriesFromJSON(importLang,translationFilePath,progress)', ScriptLanguage.JAVASCRIPT, undefined, UndoModes.FAST_ENTIRE_SCRIPT, "undoStoriesImport");
                 });
                 progress.close();
-                /*
-                //Test window layout
-                storiesCount = app.activeDocument.stories.length;
-                $.writeln('entered importStoriesFromJSON function...');
-                progress.message("Reading translation file\nfrom path nnn...");
-                progress.increment();
-                while(steps--){
-                    progress.message("translating story " + steps + "\ntesting 1,2,3...");
-                    progress.increment();
-                    //$.sleep(5);
-                }
-                */
             } else {
                 alert('No translation selected. No action will be taken.');
                 myDialog.destroy();
