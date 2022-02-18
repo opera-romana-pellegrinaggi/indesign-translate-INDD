@@ -1,5 +1,13 @@
-//ExportStoriesI18nJson.jsx
-//An InDesign JavaScript
+/**
+ * ExportStoriesI18nJson.jsx
+ * An InDesign JavaScript
+ *
+ * Author: John R. D'Orazio <j.dorazio@orpnet.org>
+ * Creation date: February 11th 2022
+ * Latest update: February 18th 2022
+ * License: Apache v2
+ */
+
 #include "../es5-shim.js"
 #include "../es6-shim.js"
 
