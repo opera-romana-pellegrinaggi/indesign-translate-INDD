@@ -8,9 +8,8 @@
  * License: Apache v2
  */
 
-
-#include "../es5-shim.js"
-#include "../es6-shim.js"
+#include "../../es5-shim.js"
+#include "../../es6-shim.js"
 
 main();
 function main(){
@@ -165,14 +164,33 @@ function importStoriesFromJSON (importLang,translationFilePath,progress) {
     for(myCounter = 0; myCounter < storiesCount; myCounter++) {
         progress.message("Translating story " + myCounter + "...");
         myStory = app.activeDocument.stories.item(myCounter);
-        if( /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(myStory.contents) ) {
+        if( /[A-Za-z]/.test(myStory.contents) ) { //À-ÖØ-öø-ÿ
             myStoryId = 'story_' + myStory.id;
             myTextStyleRanges = myStory.textStyleRanges;
             for(textRangeCounter = 0; textRangeCounter < myTextStyleRanges.length; textRangeCounter++) {
                 myTextRange = myTextStyleRanges[textRangeCounter];
                 myTextRangeContents = myTextRange.contents;
-                if( /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(myTextRangeContents) ) {
-                    myTextRange.contents = translationObj[myStoryId]['tsr_'+textRangeCounter] || myTextRange.contents;
+                if( /[A-Za-z]/.test(myTextRangeContents) ) { //À-ÖØ-öø-ÿ
+                    if( translatedStories.includes( myStoryId ) && translationObj[myStoryId].hasOwnProperty('tsr_'+textRangeCounter) ) {
+                        myTextRangeTranslatedArr = translationObj[myStoryId]['tsr_'+textRangeCounter];
+                        //if any of the elements are an array, we must first deal with this and transform it back to a string
+                        arrEls = myTextRangeTranslatedArr.filter(function(el){ return Array.isArray(el); });
+                        if(arrEls.length > 0) {
+                            arrEls.map(function(arrEl) {
+                                joinedStr = arrEl.join();
+                                joinedStr = joinedStr.replace(/\u2025/g, '\ufeff');
+                                return joinedStr;
+                            });
+                        }
+                        $.writeln( JSON.stringify(myTextRangeTranslatedArr) );
+                        myTextRangeTranslatedContents = myTextRangeTranslatedArr.join('\r');
+                        myTextRangeTranslatedContents = myTextRangeTranslatedContents.replace(/\u2029/g, ''); //&#13;
+                        myTextRangeTranslatedContents = myTextRangeTranslatedContents.replace(/\u2028/g, '\n'); //&#10;
+                        //myTextRangeTranslatedContents = translationObj[myStoryId]['tsr_'+textRangeCounter].replace(/\u000D/g, '\r'); //&#13;
+                        //myTextRangeContents = myTextRangeContents.replace(/\uFEFF/g, String.fromCharCode(65279)); //&#65279;
+                        myTextRange.contents = myTextRangeTranslatedContents;
+                        //myTextRange.contents = translationObj[myStoryId]['tsr_'+textRangeCounter];
+                    }
                 }
             }
         }

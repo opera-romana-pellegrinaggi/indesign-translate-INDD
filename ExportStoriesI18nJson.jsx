@@ -8,8 +8,8 @@
  * License: Apache v2
  */
 
-#include "../es5-shim.js"
-#include "../es6-shim.js"
+#include "../../es5-shim.js"
+#include "../../es6-shim.js"
 
 main();
 function main(){
@@ -109,15 +109,59 @@ function exportStoriesToJSON (exportFolder) {
     for(myCounter = 0; myCounter < storiesCount; myCounter++) {
         myStory = app.activeDocument.stories.item(myCounter);
         progress.message('Extracting story ' + myCounter + '...');
-        if( /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(myStory.contents) ) {
+        if( /[A-Za-z]/.test(myStory.contents) ) {
             myStoryId = 'story_' + myStory.id;
             translationObj[myStoryId] = {};
             myTextStyleRanges = myStory.textStyleRanges;
             for(textRangeCounter = 0; textRangeCounter < myTextStyleRanges.length; textRangeCounter++) {
                 myTextRange = myTextStyleRanges[textRangeCounter];
                 myTextRangeContents = myTextRange.contents;
-                if( /[A-Za-zÀ-ÖØ-öø-ÿ]/.test(myTextRangeContents) ) {
-                    translationObj[myStoryId]['tsr_'+textRangeCounter] = myTextRangeContents.trim();
+                if( /[A-Za-z]/.test(myTextRangeContents) ) {
+                    myTextRangeContents = myTextRangeContents.replace(/  /g,' ');
+                    //myTextRangeContents = myTextRangeContents.replace(/\r/g, '\u2029'); //&#13; PARAGRAPH_SEPARATOR
+                    myTextRangeContents = myTextRangeContents.replace(/\n/g, '\u2028'); //&#10; LINE_SEPARATOR
+                    //myTextRangeContents = myTextRangeContents.replace(/\uFEFF/g, '\uFEFF'); //&#65279;
+                    myTextRangeContents = myTextRangeContents.replace(/\.{3}/g, '\u2026');
+                    myTextRangeArr = myTextRangeContents.split(/\r/).map(function(el){ if(el===""){ return "\u2029"; } else { return el; }});
+                    myTextRangeArr = myTextRangeArr.map(function(el) {
+                        newVal = [];
+                        pattern1 = '^([^\\w“”&—\\s\\u00C0-\\u017F]*)';
+                        pattern2 = '([^\\w“”&.,!;:\\s\\u00C0-\\u017F]*)$';
+                        regStart = /^([^\w“”&—\s\u00C0-\u017F]+)/;
+                        regEnd = /([^\w“”&.,!;:\s\u00C0-\u017F]+)$/;
+                        if( /^\uFEFF/.test(el) ) {
+                            newVal[0] = '\u2025';
+                            newVal[1] = el.replace(/^\uFEFF/,'');
+                        }
+                        else if( /\uFEFF$/.test(el) ) {
+                            newVal[0] = el.replace(/\uFEFF$/,'');
+                            newVal[1] = '\u2025';
+                        }
+                        else if( /\uFEFF/.test(el) ) {
+                            newVal = el.split(/(\uFEFF)/g);
+                            newVal = newVal.map( function(el){ if(el === '\ufeff'){ el = '\u2025'; } return el; });
+                        }
+                        else if( regStart.test(el) || regEnd.test(el) ) {
+                            if( regStart.test(el) ) {
+                                pattern1 = pattern1.replace('*','+');
+                            }
+                            if( regEnd.test(el) ) {
+                                pattern2 = pattern2.replace('*','+');
+                            }
+                            pattern = new RegExp( pattern1 + '(.*)' + pattern2 );
+                            newVal = el.match(pattern);
+                            //alert( '<' + newVal.join('> | <') + '>' );
+                            newVal.shift();
+                        }
+                        newVal = newVal.filter(function(el){ return el !== "" });
+                        if(newVal.length < 2){
+                            return el;
+                        }
+                        else {
+                            return newVal;
+                        }
+                    });
+                    translationObj[myStoryId]['tsr_'+textRangeCounter] = myTextRangeArr; //.trim();
                 }
             }
         }
