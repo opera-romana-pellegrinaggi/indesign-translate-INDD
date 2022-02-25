@@ -121,7 +121,7 @@ function exportStoriesToJSON (exportFolder) {
                     //myTextRangeContents = myTextRangeContents.replace(/\r/g, '\u2029'); //&#13; PARAGRAPH_SEPARATOR
                     myTextRangeContents = myTextRangeContents.replace(/\n/g, '\u2028'); //&#10; LINE_SEPARATOR
                     //myTextRangeContents = myTextRangeContents.replace(/\uFEFF/g, '\uFEFF'); //&#65279;
-                    myTextRangeContents = myTextRangeContents.replace(/\.{3}/g, '\u2026');
+                    myTextRangeContents = myTextRangeContents.replace(/\.{3}/g, '\u2026'); //ELLIPSIS
                     myTextRangeArr = myTextRangeContents.split(/\r/).map(function(el){ if(el===""){ return "\u2029"; } else { return el; }});
                     myTextRangeArr = myTextRangeArr.map(function(el) {
                         newVal = [];

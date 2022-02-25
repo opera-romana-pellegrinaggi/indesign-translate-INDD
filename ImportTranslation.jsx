@@ -11,6 +11,12 @@
 #include "../../es5-shim.js"
 #include "../../es6-shim.js"
 
+if(!Array.prototype.includes){
+    Array.prototype.includes = function(search){
+     return !!~this.indexOf(search);
+   }
+}
+
 main();
 function main(){
     app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
@@ -147,20 +153,21 @@ function progress(steps) {
 
 function importStoriesFromJSON (importLang,translationFilePath,progress) {
     storiesCount = app.activeDocument.stories.length;
-    //$.writeln('entered importStoriesFromJSON function...');
+    $.writeln('entered importStoriesFromJSON function...');
     progress.message("Reading translation file " + translationFile);
     var translationFile = new File(translationFilePath);
+    translationFile.encoding = 'utf-8';
     translationFile.open("r");
     translationObj = JSON.parse( translationFile.read() );
     translationFile.close();
     progress.increment();
 
-    //$.writeln( 'finished loading translation strings from translation file:' );
-    //$.writeln( JSON.stringify( translationObj, null, 4 ) );
-    //$.writeln( 'There are ' + storiesCount + ' stories in the document' );
+    $.writeln( 'finished loading translation strings from translation file:' );
+    $.writeln( JSON.stringify( translationObj, null, 4 ) );
+    $.writeln( 'There are ' + storiesCount + ' stories in the document' );
     translatedStories = Object.keys( translationObj );
-    //$.writeln( 'There are ' + translatedStories.length + ' stories in the translation file.' );
-    //$.writeln( 'If there are less in the translation file it is not necessarily a problem, because perhaps not all stories need translation...' );
+    $.writeln( 'There are ' + translatedStories.length + ' stories in the translation file.' );
+    $.writeln( 'If there are less in the translation file it is not necessarily a problem, because perhaps not all stories need translation...' );
     for(myCounter = 0; myCounter < storiesCount; myCounter++) {
         progress.message("Translating story " + myCounter + "...");
         myStory = app.activeDocument.stories.item(myCounter);
@@ -174,28 +181,29 @@ function importStoriesFromJSON (importLang,translationFilePath,progress) {
                     if( translatedStories.includes( myStoryId ) && translationObj[myStoryId].hasOwnProperty('tsr_'+textRangeCounter) ) {
                         myTextRangeTranslatedArr = translationObj[myStoryId]['tsr_'+textRangeCounter];
                         //if any of the elements are an array, we must first deal with this and transform it back to a string
-                        arrEls = myTextRangeTranslatedArr.filter(function(el){ return Array.isArray(el); });
-                        if(arrEls.length > 0) {
-                            arrEls.map(function(arrEl) {
-                                joinedStr = arrEl.join();
-                                joinedStr = joinedStr.replace(/\u2025/g, '\ufeff');
+                        myTextRangeTranslatedArr = myTextRangeTranslatedArr.map( function(el){
+                            if( Array.isArray(el) ) {
+                                joinedStr = el.join('');
+                                if( /\u2025/.test(joinedStr) ) {
+                                    joinedStr = joinedStr.replace(/\u2025/g,'\uFEFF');
+                                }
                                 return joinedStr;
-                            });
+                            } else {
+                                return el;
+                            }
+                        });
+                        myTextRangeTranslatedContents = myTextRangeTranslatedArr.join('\r'); //Paragraph
+                        if( /\u2028/.test(myTextRangeTranslatedContents) ){
+                            myTextRangeTranslatedContents = myTextRangeTranslatedContents.replace(/\u2028/g, '\n');
                         }
-                        $.writeln( JSON.stringify(myTextRangeTranslatedArr) );
-                        myTextRangeTranslatedContents = myTextRangeTranslatedArr.join('\r');
-                        myTextRangeTranslatedContents = myTextRangeTranslatedContents.replace(/\u2029/g, ''); //&#13;
-                        myTextRangeTranslatedContents = myTextRangeTranslatedContents.replace(/\u2028/g, '\n'); //&#10;
-                        //myTextRangeTranslatedContents = translationObj[myStoryId]['tsr_'+textRangeCounter].replace(/\u000D/g, '\r'); //&#13;
-                        //myTextRangeContents = myTextRangeContents.replace(/\uFEFF/g, String.fromCharCode(65279)); //&#65279;
                         myTextRange.contents = myTextRangeTranslatedContents;
-                        //myTextRange.contents = translationObj[myStoryId]['tsr_'+textRangeCounter];
                     }
                 }
             }
         }
         progress.increment();
     }
+
     //$.writeln( 'finished translating stories' );
     var doc = app.activeDocument;
     var docNameFull = doc.name;
@@ -208,9 +216,12 @@ function importStoriesFromJSON (importLang,translationFilePath,progress) {
     try {
         doc.saveACopy( saveFile );
         progress.increment();
+        app.open( saveFile );
+        //doc.close(SaveOptions.NO);
     }
     catch(error) {
         $.writeln(error);
         progress.close();
     }
+
 }
